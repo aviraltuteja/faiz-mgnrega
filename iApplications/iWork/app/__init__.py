@@ -11,7 +11,7 @@ from iWork.app.routes.admin import blp as adminBlueprint
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://zeidwhrc:1bCsVmV7_6iO5tCsAS8pGRNl6Z-VZThj@john.db.elephantsql.com/zeidwhrc"
+    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://tfaiz:ZpEuOpYlIYXIbKz6uYDdug@allied-drake-7582.j77.aws-ap-south-1.cockroachlabs.cloud:26257/defaultdb"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY']="WORK_SECRET_KEY"
 
