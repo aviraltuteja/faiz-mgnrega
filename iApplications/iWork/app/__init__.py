@@ -34,4 +34,9 @@ def create_app():
     app.register_blueprint(authBlueprint)
     app.register_blueprint(adminBlueprint)
 
+    # Default route to redirect to register page
+    @app.route('/')
+    def home():
+        return redirect(url_for('auth.register'))
+
     return app
