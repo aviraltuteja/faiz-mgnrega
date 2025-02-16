@@ -1,5 +1,7 @@
 import os
 from flask import Flask
+from flask import redirect, url_for
+
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -37,6 +39,6 @@ def create_app():
     # Default route to redirect to register page
     @app.route('/')
     def home():
-        return redirect(url_for('auth.register'))
+        return redirect('/iwork/register')
 
     return app
