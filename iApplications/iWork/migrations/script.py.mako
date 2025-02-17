@@ -19,12 +19,6 @@ depends_on = ${repr(depends_on)}
 def upgrade():
     ${upgrades if upgrades else "pass"}
 
-    # Grant permissions
-    op.execute("GRANT ALL PRIVILEGES ON SCHEMA public TO zeidwhrc;")
-
 
 def downgrade():
     ${downgrades if downgrades else "pass"}
-
-    # Revoke permissions if necessary
-    op.execute("REVOKE ALL PRIVILEGES ON SCHEMA public FROM zeidwhrc;")
