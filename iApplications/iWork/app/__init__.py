@@ -1,7 +1,6 @@
 import os
 from flask import Flask
 from flask import redirect, url_for
-
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -13,7 +12,7 @@ from iWork.app.routes.admin import blp as adminBlueprint
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://tfaiz:ZpEuOpYlIYXIbKz6uYDdug@allied-drake-7582.j77.aws-ap-south-1.cockroachlabs.cloud:26257/defaultdb"
+    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://faiz:ZpEuOpYlIYXIbKz6uYDdug@allied-drake-7582.j77.aws-ap-south-1.cockroachlabs.cloud:26257/defaultdb"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY']="WORK_SECRET_KEY"
 
@@ -37,8 +36,6 @@ def create_app():
     app.register_blueprint(adminBlueprint)
 
     # Default route to redirect to register page
-    @app.route('/')
-    def home():
-        return redirect('/iwork/register')
+
 
     return app
