@@ -1,8 +1,8 @@
-"""Initial neon migration
+"""new neon migration
 
-Revision ID: 555135a135d9
+Revision ID: 7e5bdc34579c
 Revises: 
-Create Date: 2025-02-26 09:04:36.508131
+Create Date: 2025-02-27 09:35:08.790783
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '555135a135d9'
+revision = '7e5bdc34579c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -26,7 +26,7 @@ def upgrade():
                nullable=False,
                autoincrement=True)
         batch_op.alter_column('input_value',
-               existing_type=sa.INTEGER(),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=100),
                existing_nullable=True)
         batch_op.alter_column('completed_work_id',
@@ -42,38 +42,30 @@ def upgrade():
                existing_type=sa.INTEGER(),
                nullable=False)
         batch_op.alter_column('created_on',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=20),
                existing_nullable=True)
+        batch_op.create_foreign_key(None, 'nrega_permissible_works', ['permissible_work_id'], ['id'])
         batch_op.create_foreign_key(None, 'nrega_completed_works', ['completed_work_id'], ['id'])
         batch_op.create_foreign_key(None, 'input_parameters', ['input_id'], ['id'])
-        batch_op.create_foreign_key(None, 'nrega_panchayats', ['panchayat_id'], ['id'])
-        batch_op.create_foreign_key(None, 'nrega_permissible_works', ['permissible_work_id'], ['id'])
         batch_op.create_foreign_key(None, 'users', ['created_by_id'], ['id'])
+        batch_op.create_foreign_key(None, 'nrega_panchayats', ['panchayat_id'], ['id'])
 
     with op.batch_alter_table('input_parameters', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
-               existing_type=sa.VARCHAR(length=128),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=100),
                existing_nullable=True)
         batch_op.alter_column('label',
-               existing_type=sa.VARCHAR(length=64),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=80),
                existing_nullable=True)
         batch_op.alter_column('unit',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=80),
                existing_nullable=True)
-        batch_op.alter_column('description',
-               existing_type=sa.VARCHAR(length=1024),
-               type_=sa.String(length=300),
-               existing_nullable=True)
         batch_op.alter_column('element_type',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=100),
                existing_nullable=True)
         batch_op.alter_column('constraint',
@@ -82,10 +74,6 @@ def upgrade():
                existing_nullable=True)
 
     with op.batch_alter_table('inputs_and_permissibles', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('input_parameter_id',
                existing_type=sa.INTEGER(),
                nullable=False)
@@ -96,32 +84,20 @@ def upgrade():
         batch_op.create_foreign_key(None, 'nrega_permissible_works', ['permissible_work_id'], ['id'])
 
     with op.batch_alter_table('nrega_activity_types', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('activity_type',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=150),
                nullable=False)
 
     with op.batch_alter_table('nrega_beneficiary_types', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('beneficiary_type',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=80),
                nullable=False)
 
     with op.batch_alter_table('nrega_blocks', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=80),
                existing_nullable=True)
         batch_op.alter_column('nrega_id',
@@ -133,24 +109,16 @@ def upgrade():
         batch_op.create_foreign_key(None, 'nrega_districts', ['district_id'], ['id'])
 
     with op.batch_alter_table('nrega_categories', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
-               existing_type=sa.VARCHAR(length=50),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=200),
                nullable=False)
         batch_op.alter_column('description',
-               existing_type=sa.VARCHAR(length=128),
+               existing_type=sa.TEXT(),
                type_=sa.String(length=200),
                nullable=False)
 
     with op.batch_alter_table('nrega_completed_works', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('code',
                existing_type=sa.TEXT(),
                type_=sa.String(length=50),
@@ -195,10 +163,6 @@ def upgrade():
         batch_op.create_foreign_key(None, 'nrega_panchayats', ['panchayat_id'], ['id'])
 
     with op.batch_alter_table('nrega_districts', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
                existing_type=sa.TEXT(),
                type_=sa.String(length=80),
@@ -213,10 +177,6 @@ def upgrade():
         batch_op.create_foreign_key(None, 'nrega_states', ['state_id'], ['id'])
 
     with op.batch_alter_table('nrega_major_heads', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('major_head',
                existing_type=sa.TEXT(),
                type_=sa.String(length=150),
@@ -227,10 +187,6 @@ def upgrade():
         batch_op.create_foreign_key(None, 'nrega_categories', ['category_id'], ['id'])
 
     with op.batch_alter_table('nrega_panchayats', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
                existing_type=sa.TEXT(),
                type_=sa.String(length=80),
@@ -243,14 +199,11 @@ def upgrade():
                existing_type=sa.TEXT(),
                type_=sa.Integer(),
                nullable=False)
+        batch_op.drop_constraint('nrega_panchayats_pk', type_='unique')
         batch_op.create_unique_constraint(None, ['nrega_id'])
         batch_op.create_foreign_key(None, 'nrega_blocks', ['block_id'], ['id'])
 
     with op.batch_alter_table('nrega_permissible_works', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('permissible_work',
                existing_type=sa.TEXT(),
                type_=sa.String(),
@@ -267,17 +220,13 @@ def upgrade():
         batch_op.alter_column('beneficiary_type_id',
                existing_type=sa.INTEGER(),
                nullable=False)
-        batch_op.create_foreign_key(None, 'nrega_major_heads', ['major_head_id'], ['id'])
         batch_op.create_foreign_key(None, 'nrega_work_types', ['work_type_id'], ['id'])
-        batch_op.create_foreign_key(None, 'nrega_activity_types', ['activity_type_id'], ['id'])
         batch_op.create_foreign_key(None, 'nrega_beneficiary_types', ['beneficiary_type_id'], ['id'])
+        batch_op.create_foreign_key(None, 'nrega_major_heads', ['major_head_id'], ['id'])
+        batch_op.create_foreign_key(None, 'nrega_activity_types', ['activity_type_id'], ['id'])
         batch_op.create_foreign_key(None, 'nrega_categories', ['category_id'], ['id'])
 
     with op.batch_alter_table('nrega_states', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
                existing_type=sa.TEXT(),
                type_=sa.String(length=80),
@@ -288,10 +237,6 @@ def upgrade():
         batch_op.create_unique_constraint(None, ['nrega_id'])
 
     with op.batch_alter_table('nrega_work_types', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('work_type',
                existing_type=sa.TEXT(),
                type_=sa.String(length=200),
@@ -302,10 +247,6 @@ def upgrade():
         batch_op.create_foreign_key(None, 'nrega_major_heads', ['major_head_id'], ['id'])
 
     with op.batch_alter_table('plant_types', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
                existing_type=sa.TEXT(),
                type_=sa.String(length=100),
@@ -321,10 +262,6 @@ def upgrade():
         batch_op.create_unique_constraint(None, ['name'])
 
     with op.batch_alter_table('user_feedbacks', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('topic',
                existing_type=sa.TEXT(),
                type_=sa.String(length=100),
@@ -340,10 +277,6 @@ def upgrade():
         batch_op.create_foreign_key(None, 'users', ['created_by_id'], ['id'])
 
     with op.batch_alter_table('users', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=False,
-               autoincrement=True)
         batch_op.alter_column('name',
                existing_type=sa.TEXT(),
                type_=sa.String(length=80),
@@ -383,10 +316,6 @@ def downgrade():
                existing_type=sa.String(length=80),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('user_feedbacks', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -402,10 +331,6 @@ def downgrade():
                existing_type=sa.String(length=100),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('plant_types', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='unique')
@@ -421,10 +346,6 @@ def downgrade():
                existing_type=sa.String(length=100),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_work_types', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -435,10 +356,6 @@ def downgrade():
                existing_type=sa.String(length=200),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_states', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='unique')
@@ -449,10 +366,6 @@ def downgrade():
                existing_type=sa.String(length=80),
                type_=sa.TEXT(),
                existing_nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_permissible_works', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -476,14 +389,11 @@ def downgrade():
                existing_type=sa.String(),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_panchayats', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
         batch_op.drop_constraint(None, type_='unique')
+        batch_op.create_unique_constraint('nrega_panchayats_pk', ['id'])
         batch_op.alter_column('block_id',
                existing_type=sa.Integer(),
                type_=sa.TEXT(),
@@ -496,10 +406,6 @@ def downgrade():
                existing_type=sa.String(length=80),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_major_heads', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -510,10 +416,6 @@ def downgrade():
                existing_type=sa.String(length=150),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_districts', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -528,10 +430,6 @@ def downgrade():
                existing_type=sa.String(length=80),
                type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_completed_works', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -576,24 +474,16 @@ def downgrade():
                existing_type=sa.String(length=50),
                type_=sa.TEXT(),
                existing_nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_categories', schema=None) as batch_op:
         batch_op.alter_column('description',
                existing_type=sa.String(length=200),
-               type_=sa.VARCHAR(length=128),
+               type_=sa.TEXT(),
                nullable=True)
         batch_op.alter_column('name',
                existing_type=sa.String(length=200),
-               type_=sa.VARCHAR(length=50),
+               type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_blocks', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -605,32 +495,20 @@ def downgrade():
                nullable=True)
         batch_op.alter_column('name',
                existing_type=sa.String(length=80),
-               type_=sa.VARCHAR(length=50),
+               type_=sa.TEXT(),
                existing_nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_beneficiary_types', schema=None) as batch_op:
         batch_op.alter_column('beneficiary_type',
                existing_type=sa.String(length=80),
-               type_=sa.VARCHAR(length=50),
+               type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('nrega_activity_types', schema=None) as batch_op:
         batch_op.alter_column('activity_type',
                existing_type=sa.String(length=150),
-               type_=sa.VARCHAR(length=50),
+               type_=sa.TEXT(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('inputs_and_permissibles', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -641,10 +519,6 @@ def downgrade():
         batch_op.alter_column('input_parameter_id',
                existing_type=sa.INTEGER(),
                nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('input_parameters', schema=None) as batch_op:
         batch_op.alter_column('constraint',
@@ -653,28 +527,20 @@ def downgrade():
                existing_nullable=True)
         batch_op.alter_column('element_type',
                existing_type=sa.String(length=100),
-               type_=sa.VARCHAR(length=50),
-               existing_nullable=True)
-        batch_op.alter_column('description',
-               existing_type=sa.String(length=300),
-               type_=sa.VARCHAR(length=1024),
+               type_=sa.TEXT(),
                existing_nullable=True)
         batch_op.alter_column('unit',
                existing_type=sa.String(length=80),
-               type_=sa.VARCHAR(length=50),
+               type_=sa.TEXT(),
                existing_nullable=True)
         batch_op.alter_column('label',
                existing_type=sa.String(length=80),
-               type_=sa.VARCHAR(length=64),
+               type_=sa.TEXT(),
                existing_nullable=True)
         batch_op.alter_column('name',
                existing_type=sa.String(length=100),
-               type_=sa.VARCHAR(length=128),
+               type_=sa.TEXT(),
                existing_nullable=True)
-        batch_op.alter_column('id',
-               existing_type=sa.INTEGER(),
-               nullable=True,
-               autoincrement=True)
 
     with op.batch_alter_table('field_data', schema=None) as batch_op:
         batch_op.drop_constraint(None, type_='foreignkey')
@@ -684,7 +550,7 @@ def downgrade():
         batch_op.drop_constraint(None, type_='foreignkey')
         batch_op.alter_column('created_on',
                existing_type=sa.String(length=20),
-               type_=sa.VARCHAR(length=50),
+               type_=sa.TEXT(),
                existing_nullable=True)
         batch_op.alter_column('panchayat_id',
                existing_type=sa.INTEGER(),
@@ -700,7 +566,7 @@ def downgrade():
                nullable=True)
         batch_op.alter_column('input_value',
                existing_type=sa.String(length=100),
-               type_=sa.INTEGER(),
+               type_=sa.TEXT(),
                existing_nullable=True)
         batch_op.alter_column('id',
                existing_type=sa.INTEGER(),
