@@ -12,7 +12,7 @@ from iWork.app.routes.admin import blp as adminBlueprint
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://faiz_mgnrega_user:2cVrCcMdQLRADukcpHO5i0K8s2KUMbN4@dpg-cupa45ggph6c73dtiqig-a.oregon-postgres.render.com/faiz_mgnrega?sslmode=require"
+    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://neondb_owner:npg_8EZiclb3terK@ep-shiny-sunset-a8o1ospu-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY']="WORK_SECRET_KEY"
 
