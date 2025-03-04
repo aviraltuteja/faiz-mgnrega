@@ -12,6 +12,6 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware # use to combine
 # # application = iCore
 from iWork import app as Work
 
-application = DispatcherMiddleware(None, {
+application = DispatcherMiddleware(Work, {
     '/iWork': Work  # Mount iWork at /iWork without iCore
 })
