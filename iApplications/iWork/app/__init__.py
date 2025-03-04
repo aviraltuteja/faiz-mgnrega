@@ -36,6 +36,8 @@ def create_app():
     app.register_blueprint(adminBlueprint, url_prefix="/iwork")
 
     # Default route to redirect to register page
-
+    @app.route("/")
+    def home():
+        return redirect(url_for("auth.login"))
 
     return app
