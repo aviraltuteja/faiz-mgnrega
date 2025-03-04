@@ -31,9 +31,9 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
     
-    app.register_blueprint(routeBlueprint, url_prefix="/iWork")
-    app.register_blueprint(authBlueprint, url_prefix="/iWork")
-    app.register_blueprint(adminBlueprint, url_prefix="/iWork")
+    app.register_blueprint(routeBlueprint, url_prefix="/iwork")
+    app.register_blueprint(authBlueprint, url_prefix="/iwork")
+    app.register_blueprint(adminBlueprint, url_prefix="/iwork")
 
     # Default route to redirect to register page
 
