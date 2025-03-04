@@ -1,6 +1,6 @@
 # # app.py
 
-# from werkzeug.middleware.dispatcher import DispatcherMiddleware # use to combine each Flask app into a larger one that is dispatched based on prefix
+from werkzeug.middleware.dispatcher import DispatcherMiddleware # use to combine each Flask app into a larger one that is dispatched based on prefix
 
 # from iCore import app as Core
 # from iWork import app as Work
@@ -12,4 +12,6 @@
 # # application = iCore
 from iWork import app as Work
 
-application = Work
+application = DispatcherMiddleware(None, {
+    '/iWork': Work  # Mount iWork at /iWork without iCore
+})
