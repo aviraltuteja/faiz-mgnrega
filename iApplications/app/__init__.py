@@ -11,5 +11,4 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware # use to combine
 
 # # application = iCore
 from iWork import app as Work
-
 application = Work

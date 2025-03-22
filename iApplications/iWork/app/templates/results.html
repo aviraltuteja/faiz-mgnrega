@@ -1,0 +1,319 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+  <!-- Title with Logos -->
+  <div class="d-flex justify-content-between align-items-center p-3">
+    <img src="{{ url_for('static', filename='IWMI.png') }}" height="40" />
+    <h3 class="text-center">MGNREGS Potential Outcome</h3>
+    <img src="{{ url_for('static', filename='GIZ.png') }}" height="40" />
+  </div>
+
+  <!-- Filters -->
+  <div class="d-flex justify-content-center gap-3 p-3">
+    <select id="state" class="form-control" style="width: 250px"></select>
+    <select id="district" class="form-control" style="width: 250px"></select>
+    <select id="block" class="form-control" style="width: 250px"></select>
+  </div>
+
+  <!-- Summary Section -->
+  <div
+    id="summary_section"
+    class="d-flex flex-column justify-content-center gap-3 p-3">
+    <!-- Data will be populated here via JS -->
+  </div>
+
+  <!-- Donut Chart -->
+  <div class="text-center mt-4">
+    <h3 id="selected_category_title"></h3>
+    <div id="donut_chart"></div>
+  </div>
+</div>
+
+<!-- Include necessary JavaScript -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    let allData = []; // Store the full dataset
+
+    function fetchData(filters = {}) {
+      console.log("Fetching data with filters:", filters);
+
+      $.ajax({
+        url: "get-results", // Update with your actual API endpoint
+        method: "GET",
+        data: filters,
+        success: function (data) {
+          console.log("Data received:", data);
+          allData = data; // Store the full data for filtering
+          populateFilters(data);
+          populateSummary(data); // Update the summary section
+          populateChart(data); // Update the chart
+        },
+      });
+    }
+
+    function populateFilters(data) {
+      console.log("Inside populate filters", data);
+
+      let states = new Set(["All"]);
+      let districts = new Set(["All"]);
+      let blocks = new Set(["All"]);
+
+      let selectedState = $("#state").val();
+      let selectedDistrict = $("#district").val();
+      let selectedBlock = $("#block").val();
+
+      data.forEach((row) => {
+        states.add(row.state);
+        if (
+          !selectedState ||
+          selectedState === "All" ||
+          row.state === selectedState
+        ) {
+          districts.add(row.district);
+        }
+        if (
+          !selectedDistrict ||
+          selectedDistrict === "All" ||
+          row.district === selectedDistrict
+        ) {
+          blocks.add(row.block);
+        }
+      });
+
+      // ✅ Ensure blocks are not filtered out when a block is selected
+      if (selectedBlock && selectedBlock !== "All") {
+        blocks.add(selectedBlock);
+      }
+
+      updateDropdown("#state", states, selectedState);
+      updateDropdown("#district", districts, selectedDistrict);
+      updateDropdown("#block", blocks, selectedBlock);
+    }
+
+    function updateDropdown(selector, items, selectedValue) {
+      let dropdown = $(selector);
+      let optionsHtml = Array.from(items)
+        .map(
+          (item) =>
+            `<option value="${item}" ${
+              item === selectedValue ? "selected" : ""
+            }>${item}</option>`
+        )
+        .join("");
+
+      dropdown.html(optionsHtml);
+    }
+
+    // 🔄 Update data and filter districts/blocks when state changes
+    $("#state").change(function () {
+      let selectedState = $(this).val();
+      let filteredData =
+        selectedState === "All"
+          ? allData
+          : allData.filter((row) => row.state === selectedState);
+
+      populateFilters(filteredData);
+      fetchData({ state: selectedState }); // Fetch data for the selected state
+    });
+
+    // 🔄 Update blocks when district changes
+    $("#district").change(function () {
+      let selectedState = $("#state").val();
+      let selectedDistrict = $(this).val();
+      let filteredData = allData.filter(
+        (row) =>
+          row.state === selectedState &&
+          (selectedDistrict === "All" || row.district === selectedDistrict)
+      );
+
+      populateFilters(filteredData);
+      fetchData({ state: selectedState, district: selectedDistrict });
+    });
+
+    // 🔄 Fetch initial data
+    fetchData();
+
+    function populateSummary(data) {
+      let summaryHTML = "";
+      let groupedData = {};
+
+      // Remove null/undefined values and convert Total to a number
+      let filteredData = data.filter(
+        (row) =>
+          row.Outcome_category && row.Output_Final && row.Total && row.Unit
+      );
+
+      filteredData.forEach((row) => {
+        let key = `${row.Outcome_category}|${row.Output_Final}|${row.Unit}`;
+        if (!groupedData[key]) {
+          groupedData[key] = {
+            total: 0,
+            unit: row.Unit,
+            subcategory: row.Output_Final,
+          };
+        }
+        groupedData[key].total +=
+          parseFloat(row.Total.toString().replace(/,/g, "")) || 0;
+      });
+
+      // Custom order of categories
+      const customOrder = [
+        "Irrigation",
+        "Water Management",
+        "Plantation",
+        "Area Improved",
+        "Soil Health",
+        "Number of Beneficiaries",
+      ];
+
+      // Icons and colors mapping
+      const categoryIcons = {
+        Irrigation: { icon: "💧", color: "#00bfff" },
+        "Water Management": { icon: "🌊", color: "aqua" },
+        Plantation: { icon: "🌳", color: "green" },
+        "Area Improved": { icon: "🌱", color: "#a1e684" },
+        "Soil Health": { icon: "♻️", color: "brown" },
+        "Number of Beneficiaries": { icon: "👥", color: "orange" },
+      };
+
+      // Group and display the categories in the specified order
+      customOrder.forEach((category) => {
+        let subcategoryItems = Object.keys(groupedData)
+          .filter((key) => key.startsWith(category))
+          .map((key) => groupedData[key]);
+
+        if (subcategoryItems.length > 0) {
+          let { icon, color } = categoryIcons[category] || {
+            icon: "⚪",
+            color: "#999999",
+          };
+
+          // 🟢 **Category Header**
+          summaryHTML += `
+        <div class="category-title" style="margin-top: 20px; padding-bottom: 8px; border-bottom: 1.5px solid #ddd;">
+          <span style="color: ${color}; font-size: 22px;">${icon}</span>
+          <span style="margin-left: 8px; font-weight: bold; font-size: 18px;">${category}</span>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center gap-3" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">`;
+
+          // 🟢 **Subcategory Items**
+          subcategoryItems.forEach((item) => {
+            let formattedTotal = item.total.toLocaleString();
+            summaryHTML += `
+          <div class="summary-item"
+               data-category="${category}" data-subcategory="${item.subcategory}"
+               style="width: 180px; height: 100px; background-color: #f9f9f9; border-radius: 10px;
+                      box-shadow: 2px 2px 8px rgba(0,0,0,0.1); cursor: pointer;
+                      display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <h5 style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">${item.subcategory}</h5>
+            <h3 style="color: #333; font-size: 16px;">${formattedTotal} ${item.unit}</h3>
+          </div>`;
+          });
+
+          summaryHTML += `</div>`; // Close the category group
+        }
+      });
+
+      $("#summary_section").html(summaryHTML);
+    }
+    function populateChart(data, selectedSubcategory) {
+      if (!selectedSubcategory) return; // Ensure a category is selected
+
+      let filteredData = data.filter(
+        (row) => row.Output_Final === selectedSubcategory
+      );
+
+      if (filteredData.length === 0) {
+        $("#donut_chart").html(
+          "<p style='text-align:center;'>No data available</p>"
+        );
+        return;
+      }
+
+      let categories = {};
+
+      filteredData.forEach((row) => {
+        if (row.work_type && row.Total) {
+          let key = row.work_type;
+          let totalValue =
+            parseFloat(row.Total.toString().replace(/,/g, "")) || 0;
+
+          if (!categories[key]) {
+            categories[key] = { total: 0, label: key };
+          }
+          categories[key].total += totalValue;
+        }
+      });
+
+      let labels = Object.keys(categories);
+      let values = labels.map((label) => categories[label].total);
+
+      let trace = {
+        labels: labels,
+        values: values,
+        type: "pie",
+        hole: 0.4,
+        textinfo: "percent",
+        insidetextfont: { color: "#FFFFFF", size: 14 },
+        outsidetextfont: { size: 14 },
+        marker: {
+          colors: [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+          ],
+        },
+      };
+
+      let layout = {
+        title: `Outcome Distribution for ${selectedSubcategory}`,
+        showlegend: true,
+        legend: { orientation: "h", x: 0.5, y: -0.2, xanchor: "center" },
+        margin: { l: 30, r: 30, t: 40, b: 80 },
+      };
+
+      Plotly.newPlot("donut_chart", [trace], layout);
+    }
+
+    // Event listener for filter changes
+    // Event listener for filter changes
+    $("#state, #district, #block").change(function () {
+      let selectedState = $("#state").val();
+      let selectedDistrict = $("#district").val();
+      let selectedBlock = $("#block").val();
+
+      console.log("Selected Filters:", {
+        selectedState,
+        selectedDistrict,
+        selectedBlock,
+      }); // Debugging
+
+      fetchData({
+        state: selectedState !== "All" ? selectedState : null,
+        district: selectedDistrict !== "All" ? selectedDistrict : null,
+        block: selectedBlock !== "All" ? selectedBlock : null,
+      });
+    });
+
+    // // Click event for summary items to update chart
+    // $("#summary_section").on("click", ".summary-item", function () {
+    //   let selectedCategory = $(this).data("category");
+    //   $("#selected_category_title").text(selectedCategory);
+    //   fetchData({ category: selectedCategory }); // Fetch specific data for category
+    // });
+    $("#summary_section").on("click", ".summary-item", function () {
+      let selectedSubcategory = $(this).data("subcategory");
+      $("#selected_category_title").text(selectedSubcategory);
+      populateChart(allData, selectedSubcategory);
+    });
+
+    fetchData(); // Initial data load
+  });
+</script>
+
+{% endblock %}

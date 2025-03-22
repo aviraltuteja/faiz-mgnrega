@@ -3,6 +3,10 @@ from flask_login import login_required, current_user
 from datetime import datetime
 from iWork.app.models import InputAndPermissible, PermissibleWork, InputParameter, District, Category, CompletedWork, Panchayat, FieldData, State, WorkType, User, Feedback
 from iWork.app.models.plant_types import PlantType
+import pandas as pd
+import os
+from flask import jsonify
+
 
 
 blp = Blueprint("routes", "routes")
@@ -261,6 +265,88 @@ def feedback():
 @blp.route('/help')
 def help():
     return render_template('help_manual.html') 
+
+df = None
+state_choices = ["Data Not Found"]
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get current file directory
+file_path = os.path.join(os.getcwd(), "iWork", "Data", "Result_admin-fin.xlsx")
+if os.path.exists(file_path):
+    df = pd.read_excel(file_path)
+else:
+    raise FileNotFoundError(f"Error: File '{file_path}' not found!")
+
+
+
+@blp.route("/results", methods=["GET", "POST"])
+@login_required
+def results():
+    global df, state_choices
+    selected_state = request.form.get("state", "All")
+    selected_district = request.form.get("district", "All")
+    selected_block = request.form.get("block", "All")
+
+    filtered_df = df.copy()
+    if os.path.exists(file_path):
+         df = pd.read_excel(file_path)
+
+    # Convert necessary columns to string (character in R)
+    for col in ["state", "district", "block", "Outcome_category", "Output_Final", "work_type", "Unit"]:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+
+    # Extract unique states
+            state_choices = ["All"] + sorted(df["state"].dropna().unique().tolist())
+        else:
+            df = None
+            state_choices = ["Data Not Found"]
+    
+    if selected_state != "All":
+        filtered_df = filtered_df[filtered_df["state"] == selected_state]
+
+    if selected_district != "All":
+        filtered_df = filtered_df[filtered_df["district"] == selected_district]
+
+    if selected_block != "All":
+        filtered_df = filtered_df[filtered_df["block"] == selected_block]
+
+    outcome_summary = filtered_df.groupby(["Outcome_category", "Output_Final", "Unit"])["Total"].sum().reset_index()
+
+    return render_template("results.html", 
+                           states=state_choices, 
+                           districts=["All"] + sorted(filtered_df["district"].unique().tolist()),
+                           blocks=["All"] + sorted(filtered_df["block"].unique().tolist()),
+                           outcome_summary=outcome_summary.to_dict(orient="records"))
+
+@blp.route("/get-results", methods=["GET"])
+@login_required
+def api_results():
+    global df  # Use the global dataframe
+
+    if df is None:
+        return jsonify({"error": "Data file not loaded"}), 500  # Handle missing data
+
+    # Get filter parameters from the request
+    selected_state = request.args.get("state")
+    selected_district = request.args.get("district")
+    selected_block = request.args.get("block")
+
+    # Create a filtered copy of the dataframe
+    filtered_df = df.copy()
+
+    if selected_state and selected_state != "All":
+        filtered_df = filtered_df[filtered_df["state"] == selected_state]
+
+    if selected_district and selected_district != "All":
+        filtered_df = filtered_df[filtered_df["district"] == selected_district]
+
+    if selected_block and selected_block != "All":
+        filtered_df = filtered_df[filtered_df["block"] == selected_block]
+
+    # Convert df to JSON-friendly format
+    results_data = filtered_df.to_dict(orient="records")
+
+    return jsonify(results_data)
+
 
 @blp.route('/find')
 def find():
