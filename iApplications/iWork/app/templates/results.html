@@ -22,6 +22,9 @@
       <select id="block" class="form-control" style="width: 250px"></select>
     </div>
   </div>
+  <div class="d-flex justify-content-center mt-3">
+    <button id="resetFilters" class="btn btn-secondary">Reset Filters</button>
+  </div>
 
   <!-- Summary Section -->
   <div
@@ -104,6 +107,14 @@
 
       dropdown.html(optionsHtml);
     }
+    $("#resetFilters").click(function () {
+      $("#state").val("All").trigger("change");
+      $("#district").val("All").trigger("change");
+      $("#block").val("All").trigger("change");
+
+      populateFilters(allData, true); // Repopulate with all data
+      fetchData({}); // Fetch all data
+    });
 
     // 🔄 Update data and filter districts/blocks when state changes
     $("#state").change(function () {
