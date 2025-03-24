@@ -9,9 +9,18 @@
 
   <!-- Filters -->
   <div class="d-flex justify-content-center gap-3 p-3">
-    <select id="state" class="form-control" style="width: 250px"></select>
-    <select id="district" class="form-control" style="width: 250px"></select>
-    <select id="block" class="form-control" style="width: 250px"></select>
+    <div>
+      <label for="state" class="form-label">State</label>
+      <select id="state" class="form-control" style="width: 250px"></select>
+    </div>
+    <div>
+      <label for="district" class="form-label">District</label>
+      <select id="district" class="form-control" style="width: 250px"></select>
+    </div>
+    <div>
+      <label for="block" class="form-label">Block</label>
+      <select id="block" class="form-control" style="width: 250px"></select>
+    </div>
   </div>
 
   <!-- Summary Section -->
@@ -36,14 +45,11 @@
     let allData = []; // Store the full dataset
 
     function fetchData(filters = {}) {
-      console.log("Fetching data with filters:", filters);
-
       $.ajax({
         url: "get-results", // Update with your actual API endpoint
         method: "GET",
         data: filters,
         success: function (data) {
-          console.log("Data received:", data);
           allData = data; // Store the full data for filtering
           populateFilters(data);
           populateSummary(data); // Update the summary section
@@ -52,41 +58,35 @@
       });
     }
 
-    function populateFilters(data) {
-      console.log("Inside populate filters", data);
-
-      let states = new Set(["All"]);
+    function populateFilters(data, resetDistrictBlock = false) {
+      let allStates = new Set(["All"]); // ✅ Always include all states
       let districts = new Set(["All"]);
       let blocks = new Set(["All"]);
 
       let selectedState = $("#state").val();
-      let selectedDistrict = $("#district").val();
-      let selectedBlock = $("#block").val();
+      let selectedDistrict = resetDistrictBlock ? "All" : $("#district").val();
+      let selectedBlock = resetDistrictBlock ? "All" : $("#block").val();
 
-      data.forEach((row) => {
-        states.add(row.state);
-        if (
-          !selectedState ||
-          selectedState === "All" ||
-          row.state === selectedState
-        ) {
+      // ✅ Always keep all states available (from full dataset)
+      allData.forEach((row) => {
+        allStates.add(row.state);
+      });
+      console.log("allStates", allStates);
+
+      // ✅ Only filter districts & blocks based on selected state/district
+      allData.forEach((row) => {
+        if (selectedState === "All" || row.state === selectedState) {
           districts.add(row.district);
         }
         if (
-          !selectedDistrict ||
-          selectedDistrict === "All" ||
-          row.district === selectedDistrict
+          (selectedDistrict === "All" || row.district === selectedDistrict) &&
+          (selectedState === "All" || row.state === selectedState)
         ) {
           blocks.add(row.block);
         }
       });
 
-      // ✅ Ensure blocks are not filtered out when a block is selected
-      if (selectedBlock && selectedBlock !== "All") {
-        blocks.add(selectedBlock);
-      }
-
-      updateDropdown("#state", states, selectedState);
+      updateDropdown("#state", allStates, selectedState); // ✅ Keep all states
       updateDropdown("#district", districts, selectedDistrict);
       updateDropdown("#block", blocks, selectedBlock);
     }
@@ -113,7 +113,7 @@
           ? allData
           : allData.filter((row) => row.state === selectedState);
 
-      populateFilters(filteredData);
+      populateFilters(filteredData, true);
       fetchData({ state: selectedState }); // Fetch data for the selected state
     });
 
@@ -286,12 +286,6 @@
       let selectedState = $("#state").val();
       let selectedDistrict = $("#district").val();
       let selectedBlock = $("#block").val();
-
-      console.log("Selected Filters:", {
-        selectedState,
-        selectedDistrict,
-        selectedBlock,
-      }); // Debugging
 
       fetchData({
         state: selectedState !== "All" ? selectedState : null,
